@@ -1,0 +1,1 @@
+A weread proxy for browser without JavaScript (e.g. DPT-S1).
