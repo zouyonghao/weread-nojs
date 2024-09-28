@@ -44,7 +44,7 @@ class App {
     });
 
     // go to the shelf page
-    fastify.get('/', async (request, reply) => {
+    fastify.get('/', async (_request, reply) => {
       const shelf = "https://weread.qq.com/wrwebsimplenjlogic/shelf";
       await page.goto(shelf);
       try {
@@ -152,7 +152,7 @@ class App {
     );
 
     // refresh page
-    fastify.get('/refresh', async (request, reply) => {
+    fastify.get('/refresh', async (_request, reply) => {
       await page.reload();
       try {
         await page.waitForNetworkIdle({
