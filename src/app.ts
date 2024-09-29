@@ -15,23 +15,24 @@ class App {
       headless: false,
       args: [`--window-size=700,900`],
       // set height and width
-      defaultViewport: null
+      defaultViewport: null,
+      userDataDir: './user_data', // to save cookies
     });
 
-    const page = await browser.newPage();
+    let page = await browser.newPage();
     // set Kindle user agent
     page.setUserAgent("Mozilla/5.0 (X11; U; Linux armv7l like Android; en-us) AppleWebKit/531.2+ (KHTML, like Gecko) Version/5.0 Safari/533.2+ Kindle/3.0+");
     // page.setBypassCSP(true);
 
-    const cookie_string = this.config.cookie;
-    const cookies = cookie_string.split(";").map((cookie) => {
-      const [name, value] = cookie.split("=");
-      return { name: name.trim(), value: value.trim(), domain: "weread.qq.com" };
-    });
-    cookies.forEach(async (cookie) => {
-      await page.setCookie(cookie);
-    }
-    );
+    // const cookie_string = this.config.cookie;
+    // const cookies = cookie_string.split(";").map((cookie) => {
+    //   const [name, value] = cookie.split("=");
+    //   return { name: name.trim(), value: value.trim(), domain: "weread.qq.com" };
+    // });
+    // cookies.forEach(async (cookie) => {
+    //   await page.setCookie(cookie);
+    // }
+    // );
 
     const fastify = Fastify({
       logger: {
@@ -45,6 +46,11 @@ class App {
 
     // go to the shelf page
     fastify.get('/', async (_request, reply) => {
+      if (page.isClosed()) {
+        page = await browser.newPage();
+        page.setUserAgent("Mozilla/5.0 (X11; U; Linux armv7l like Android; en-us) AppleWebKit/531.2+ (KHTML, like Gecko) Version/5.0 Safari/533.2+ Kindle/3.0+");
+      }
+
       const shelf = "https://weread.qq.com/wrwebsimplenjlogic/shelf";
       await page.goto(shelf);
       try {
@@ -169,6 +175,18 @@ class App {
       return data;
     });
 
+    // close page
+    fastify.get('/close', async (_request, reply) => {
+      await page.close();
+      reply.type('text/html');
+      let data = `<html><body>`
+      data += `<h1>Page closed</h1>`;
+      // reopen the shelf
+      data += `<a href="/" style="float:left; margin-left: 10px; font-size: 30px;">Shelf</a>`;
+      data += `</body></html>`;
+      return data;
+    });
+
     fastify.listen(
       { host: this.config.host, port: this.config.port },
       (err) => {
@@ -193,7 +211,12 @@ class App {
     data += `<a href="/" style="float:left; margin-left: 10px; font-size: 30px;">Shelf</a>`;
     // refresh
     data += `<a href="/refresh" style="float:left; margin-left: 10px; font-size: 30px;"/>Refresh</a>`;
+    // close
+    data += `<a href="/close" style="float:left; margin-left: 10px; font-size: 30px;"/>Close</a>`;
+
+    // next page
     data += `<a href="/click?action=next" style="float:right; margin-right: 10px; font-size: 30px;">Next Page</a>`;
+    // prev page
     data += `<a href="/click?action=prev" style="float:right; margin-right: 10px; font-size: 30px;">`;
     data += `Prev Page</a>`;
     data += `</body></html>`;
