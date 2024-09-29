@@ -13,7 +13,7 @@ class App {
 
     const browser = await puppeteer.launch({
       headless: false,
-      args: [`--window-size=700,900`],
+      args: [`--no-sandbox`, `--window-size=700,900`],
       // set height and width
       defaultViewport: null,
       userDataDir: './user_data', // to save cookies
