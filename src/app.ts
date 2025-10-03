@@ -19,6 +19,7 @@ class App {
 
     const browser = await puppeteer.launch({
       headless: false,
+      executablePath: '/usr/bin/google-chrome-stable',
       args: [`--no-sandbox`, `--window-size=700,900`, `--disable-dev-shm-usage`, `--disable-gpu`, `--no-first-run`, `--disable-extensions`],
       // set height and width
       defaultViewport: null,
